@@ -1,21 +1,32 @@
 const inquirer = require('inquirer');
 import consola from 'consola';
 
+function measurePerformance(target: any, name: string, descriptor: any) {
+  const originalMethod = descriptor.value;
+  descriptor.value = function (...args: any) {
+   const start = performance.now()
+   const result = originalMethod.apply(this, args)
+   const finish = performance.now()
+   console.info(`${name} execution time is ${finish - start} milliseconds`)
+   return result;
+ }
+}
+
 enum Action {
-    List = "list",
-    Add = "add",
-    Remove = "remove",
-    Quit = "quit"
+  List = "list",
+  Add = "add",
+  Remove = "remove",
+  Quit = "quit"
 }
 
 enum MessageVariant {
-    Success = "success",
-    Error = "error",
-    Info = "info"
+  Success = "success",
+  Error = "error",
+  Info = "info"
 }
   
 type InquirerAnswers = {
-    action: Action
+  action: Action
 }
 
 interface User {
@@ -71,6 +82,7 @@ class Message {
 class UsersData {
   private data: User[] = [];
 
+  @measurePerformance
   public showAll(): void {
     Message.showColorized(MessageVariant.Info, "Users data");
     if (this.data.length === 0) {
